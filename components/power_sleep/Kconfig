@@ -1,0 +1,31 @@
+menu "Power & Sleep"
+
+config POWER_SLEEP_GPIO_WAKE
+    int "Wake-up GPIO number"
+    default 0
+    help
+        GPIO used to wake from light sleep (EXT0). Default 0.
+
+config POWER_SLEEP_EXT0_LEVEL
+    int "EXT0 wake level (0=low, 1=high)"
+    range 0 1
+    default 0
+    help
+        Logic level that triggers EXT0 wake. If your button pulls the pin low when pressed, choose 0.
+
+config POWER_SLEEP_MIN_SLEEP_MS
+    int "Minimum light sleep (ms)"
+    range 0 600000
+    default 100
+    help
+        Minimum duration to request when entering light sleep.
+
+config POWER_SLEEP_DISPLAY_TIMEOUT_MS
+    int "Display timeout before sleep (ms)"
+    range 0 3600000
+    default 10000
+    help
+        Time without activity before the display backlight is turned off and
+        the SoC enters light sleep. 0 disables auto-sleep.
+
+endmenu
