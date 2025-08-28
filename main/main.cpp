@@ -18,7 +18,9 @@
 #include "bsp/touch.h"
 #include "esp_brookesia.hpp"
 #include "bsp_board_extra.h"
-#include "power_sleep.h"
+#include "display_manager.h"
+// Power management
+#include "esp_pm.h"
 
 #include "apps.h"
 
@@ -46,7 +48,12 @@ extern "C" void app_main(void)
     ESP_ERROR_CHECK(bsp_spiffs_mount());
     ESP_LOGI(TAG, "SPIFFS mount successfully");
 
-    ESP_ERROR_CHECK(bsp_extra_codec_init());
+    //ESP_ERROR_CHECK(bsp_extra_codec_init());
+
+    // Block light-sleep during boot and UI/display bring-up
+    display_manager_pm_early_init();
+
+    bsp_extra_init();
 
     lv_display_t *disp = bsp_display_start();
 
@@ -83,10 +90,10 @@ extern "C" void app_main(void)
     ESP_BROOKESIA_CHECK_FALSE_EXIT(phone->begin(), "Begin failed");
 
     // Bind global LVGL touch activity to reset display timeout system-wide
-    ESP_ERROR_CHECK(power_sleep_bind_global_touch_activity());
+    //ESP_ERROR_CHECK(power_sleep_bind_global_touch_activity());
 
     // Start display auto-sleep manager (timeout configurable in menuconfig)
-    ESP_ERROR_CHECK(power_sleep_start_manager());
+    //ESP_ERROR_CHECK(power_sleep_start_manager());
 
     //Calculator *calculator = new Calculator();
     //assert(calculator != nullptr && "Failed to create calculator");
@@ -98,4 +105,14 @@ extern "C" void app_main(void)
 
 
     bsp_display_unlock();
+
+    display_manager_init();
+
+    // Now enable PM with light sleep allowed (still blocked while screen is ON)
+    esp_pm_config_t pm_cfg = {
+        .max_freq_mhz = 240,
+        .min_freq_mhz = 80,
+        .light_sleep_enable = true,
+    };
+    (void)esp_pm_configure(&pm_cfg);
 }

@@ -4,5 +4,8 @@ dependencies:
   idf: ">=5.1.0"
   espressif/esp_lvgl_port:
     version: "^2"
-  espressif/esp-brookesia: "*"
-  lvgl/lvgl: "8.4.0"
+  lvgl/lvgl: "9.2.*"
+  espressif/esp-brookesia:
+    version: "0.5.0"
+  waveshare/qmi8658:
+    version: "*"
