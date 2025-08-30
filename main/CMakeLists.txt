@@ -1,6 +1,8 @@
 idf_component_register(
     SRCS "main.cpp"
-    INCLUDE_DIRS ".")
+    INCLUDE_DIRS "."
+    REQUIRES display_manager bsp_extra
+    )
 
 target_compile_options(${COMPONENT_LIB} PUBLIC -Wno-missing-field-initializers)
 
@@ -9,7 +11,7 @@ if(CONFIG_ESP_BROOKESIA_MEMORY_USE_CUSTOM)
     # Get the exact component name
     idf_build_get_property(build_components BUILD_COMPONENTS)
     foreach(COMPONENT ${build_components})
-        if(COMPONENT MATCHES "esp-brookesia" OR COMPONENT MATCHES "espressif__esp-brookesia")
+        if(COMPONENT MATCHES "brookesia_core" OR COMPONENT MATCHES "espressif__brookesia_core")
             set(TARGET_COMPONENT ${COMPONENT})
             break()
         endif()
@@ -17,7 +19,7 @@ if(CONFIG_ESP_BROOKESIA_MEMORY_USE_CUSTOM)
 
     # Get the component library
     if(TARGET_COMPONENT STREQUAL "")
-        message(FATAL_ERROR "Component 'esp-brookesia' not found.")
+        message(FATAL_ERROR "Component 'brookesia_core' not found.")
     else()
         idf_component_get_property(ESP_BROOKESIA_LIB ${TARGET_COMPONENT} COMPONENT_LIB)
     endif()
@@ -32,9 +34,11 @@ endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")
 
-spiffs_create_partition_image(
-    storage
-    ../spiffs
-    FLASH_IN_PROJECT
-    SPIFFS_IMAGE_FLAGS="-b 4096 -p 256 -s 0x100000 -q"
-)
+#spiffs_create_partition_image(
+#    storage
+#    ../spiffs
+#    FLASH_IN_PROJECT
+#    SPIFFS_IMAGE_FLAGS="-b 4096 -p 256 -s 0x100000 -q"
+#)
+
+spiffs_create_partition_image(storage ../spiffs FLASH_IN_PROJECT)

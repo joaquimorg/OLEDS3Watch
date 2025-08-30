@@ -12,8 +12,8 @@
 #include "driver/gpio.h"
 #include "lvgl.h"
 #include "esp_lvgl_port.h"
-#include "settings.h"
-#include "nimble-nordic-uart.h"
+//#include "settings.h"
+//#include "nimble-nordic-uart.h"
 // Power management
 #include "sdkconfig.h"
 #include "esp_sleep.h"
@@ -25,6 +25,7 @@
 // If the board provides simple GPIO buttons, use one as wake key.
 // On this hardware BSP_CAPS_BUTTONS is 0, so we will use the PMU PWR key instead.
 #define DISPLAY_BUTTON GPIO_NUM_0
+//#define CONFIG_PMU_INTERRUPT_PIN 35
 
 static const char *TAG = "DISPLAY_MGR";
 
@@ -59,7 +60,7 @@ static void display_turn_off_internal(void) {
     bsp_display_sleep();
     bsp_display_brightness_set(0);
     // Hint BLE to prefer low-power connection parameters while screen is off
-    nordic_uart_set_low_power_mode(true);
+    //nordic_uart_set_low_power_mode(true);
     // Allow automatic light sleep while the screen is off
 #if CONFIG_PM_ENABLE
     if (s_no_ls_lock) {
@@ -79,7 +80,8 @@ void display_manager_turn_on(void) {
         // Wake the panel first, then resume LVGL and restore brightness        
         bsp_display_wake();
         lvgl_port_resume();
-        bsp_display_brightness_set(settings_get_brightness());
+        //bsp_display_brightness_set(settings_get_brightness());
+        bsp_display_brightness_set(30);
         // Re-enable touch input and release touch reset
         lv_indev_t* indev = bsp_display_get_input_dev();
         if (indev) {
@@ -99,7 +101,7 @@ void display_manager_turn_on(void) {
     }
 #endif
     // Restore more responsive BLE params when screen is on
-    nordic_uart_set_low_power_mode(false);
+    //nordic_uart_set_low_power_mode(false);
     display_manager_reset_timer();
 }
 
@@ -130,19 +132,19 @@ static void touch_event_cb(lv_event_t *e) {
 
 static bool wake_button_pressed(void)
 {
-#if BSP_CAPS_BUTTONS
+//#if BSP_CAPS_BUTTONS
     return gpio_get_level(DISPLAY_BUTTON) == 0;
-#else
+//#else
     // Poll AXP2101 power key short-press event
-    return bsp_power_poll_pwr_button_short();
-#endif
+//    return bsp_power_poll_pwr_button_short();
+//#endif
 }
 
 static void display_manager_task(void *arg) {
     ESP_LOGI(TAG, "Display manager task started");
     while (1) {
         // Refresh timeout from settings to apply changes immediately
-        timeout_ms = settings_get_display_timeout();
+        timeout_ms = 30000;//settings_get_display_timeout();
         if (display_on) {
             uint32_t inactive = lv_disp_get_inactive_time(NULL);
             if (inactive >= timeout_ms) {
@@ -163,8 +165,8 @@ static void display_manager_task(void *arg) {
 }
 
 void display_manager_init(void) {
-    timeout_ms = settings_get_display_timeout();
-#if BSP_CAPS_BUTTONS
+    timeout_ms = 30000;//settings_get_display_timeout();
+
     gpio_config_t io_conf = {
         .pin_bit_mask = 1ULL << DISPLAY_BUTTON,
         .mode = GPIO_MODE_INPUT,
@@ -173,49 +175,8 @@ void display_manager_init(void) {
         .intr_type = GPIO_INTR_DISABLE,
     };
     gpio_config(&io_conf);
-#else
-    ESP_LOGI(TAG, "Using PMU PWR key to wake display");
-#endif
 
-    lv_obj_add_event_cb(lv_scr_act(), touch_event_cb, LV_EVENT_ALL, NULL);
-
-    // PM lock may be created in early init; if not, create and acquire now
-#if CONFIG_PM_ENABLE
-    if (!s_no_ls_lock) {
-        (void)esp_pm_lock_create(ESP_PM_NO_LIGHT_SLEEP, 0, "display", &s_no_ls_lock);
-    }
-    if (s_no_ls_lock) {
-        (void)esp_pm_lock_acquire(s_no_ls_lock);
-    }
-#endif
-
-    // Configure GPIO wake-ups so user input can wake CPU from light sleep
-    // Only meaningful if PM/light-sleep is enabled in project config
-#if CONFIG_PM_ENABLE
-    // Touch INT is active-low on this board
-    gpio_config_t touch_io = {
-        .pin_bit_mask = 1ULL << BSP_LCD_TOUCH_INT,
-        .mode = GPIO_MODE_INPUT,
-        .pull_up_en = GPIO_PULLUP_ENABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE,
-    };
-    (void)gpio_config(&touch_io);
-    (void)gpio_wakeup_enable(BSP_LCD_TOUCH_INT, GPIO_INTR_LOW_LEVEL);
-#ifdef CONFIG_PMU_INTERRUPT_PIN
-    // PMU IRQ (e.g., power key) also active-low
-    gpio_config_t pmu_io = {
-        .pin_bit_mask = 1ULL << CONFIG_PMU_INTERRUPT_PIN,
-        .mode = GPIO_MODE_INPUT,
-        .pull_up_en = GPIO_PULLUP_ENABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE,
-    };
-    (void)gpio_config(&pmu_io);
-    (void)gpio_wakeup_enable(CONFIG_PMU_INTERRUPT_PIN, GPIO_INTR_LOW_LEVEL);
-#endif
-    (void)esp_sleep_enable_gpio_wakeup();
-#endif // CONFIG_PM_ENABLE
+    bsp_display_brightness_set(30);
 
     xTaskCreate(display_manager_task, "display_mgr", 4000, NULL, 4, NULL);
 }

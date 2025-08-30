@@ -5,7 +5,14 @@ dependencies:
   espressif/esp_lvgl_port:
     version: "^2"
   lvgl/lvgl: "9.2.*"
-  espressif/esp-brookesia:
-    version: "0.5.0"
+  brookesia_core:
+    version: "*"
+    override_path: "D:/Work/ESP32-S3-Touch-AMOLED/esp-brookesia/core/brookesia_core"
   waveshare/qmi8658:
     version: "*"
+  brookesia_app_calculator:
+    override_path: "../components/apps/brookesia_app_calculator"
+  brookesia_app_game_2048:
+    override_path: "../components/apps/brookesia_app_game_2048"
+  brookesia_app_settings:
+    override_path: "../components/apps/brookesia_app_settings"

@@ -1,8 +1,84 @@
 dependencies:
+  brookesia_app_calculator:
+    dependencies:
+    - name: espressif/brookesia_core
+      public: true
+    source:
+      path: D:\Work\ESP32-S3-Touch-AMOLED\OLEDS3Watch\components\apps\brookesia_app_calculator
+      type: local
+    version: 0.6.0
+  brookesia_app_game_2048:
+    dependencies:
+    - name: espressif/brookesia_core
+      public: true
+    source:
+      path: D:\Work\ESP32-S3-Touch-AMOLED\OLEDS3Watch\components\apps\brookesia_app_game_2048
+      type: local
+    version: 0.6.0
+  brookesia_app_settings:
+    dependencies:
+    - name: espressif/brookesia_core
+      public: true
+    source:
+      path: D:\Work\ESP32-S3-Touch-AMOLED\OLEDS3Watch\components\apps\brookesia_app_settings
+      type: local
+    version: 0.6.0
+  brookesia_core:
+    dependencies:
+    - name: idf
+      version: '>=5.3'
+    - name: espressif/cmake_utilities
+      public: true
+      version: 0.*
+    - name: espressif/esp-lib-utils
+      public: true
+      version: 0.3.*
+    - name: espressif/esp-boost
+      public: true
+      version: 0.3.*
+    - name: lvgl/lvgl
+      public: true
+      version: 9.2.*
+    - name: espressif2022/image_player
+      public: true
+      version: 1.1.*
+    - name: espressif/esp_mmap_assets
+      public: true
+      version: 1.3.*
+    - name: espressif/esp_coze
+      public: true
+      version: ^0.6
+    - name: espressif/gmf_core
+      public: true
+      version: ^0.6
+    - name: espressif/gmf_ai_audio
+      public: true
+      rules:
+      - if: target in [esp32p4, esp32s3, esp32]
+      version: ^0.6
+    - name: espressif/gmf_io
+      public: true
+      version: ^0.6
+    - name: espressif/gmf_misc
+      public: true
+      version: ^0.6
+    - name: espressif/gmf_audio
+      public: true
+      version: ^0.6
+    - name: espressif/esp_audio_simple_player
+      public: true
+      version: 0.9.3
+    - name: espressif/esp_websocket_client
+      public: true
+      version: ^1.2.3
+    source:
+      path: D:\Work\ESP32-S3-Touch-AMOLED\esp-brookesia\core\brookesia_core
+      type: local
+    version: 0.6.0-beta2
   esp32_s3_touch_amoled_2_06:
     dependencies: []
     source:
-      path: E:\OLEDS3Watch\components\esp32_s3_touch_amoled_2_06
+      path: D:\Work\ESP32-S3-Touch-AMOLED\OLEDS3Watch\components\esp32_s3_touch_amoled_2_06
       type: local
     version: 1.0.3
   espressif/cmake_utilities:
@@ -12,37 +88,85 @@ dependencies:
       require: private
       version: '>=4.1'
     source:
-      registry_url: https://components.espressif.com
+      registry_url: https://components.espressif.com/
       type: service
     version: 0.5.3
-  espressif/esp-brookesia:
-    component_hash: da224da7a829bb930793c0c779b44227238a57191ca360908c8f2b051d220223
+  espressif/esp-boost:
+    component_hash: faf0cf16385575da381cde57989c14a82538ef90665fe7f7cec459a738c88fec
     dependencies:
-    - name: espressif/esp-lib-utils
-      registry_url: https://components.espressif.com
-      require: public
-      version: 0.2.*
     - name: idf
       require: private
       version: '>=5.3'
-    - name: lvgl/lvgl
-      registry_url: https://components.espressif.com
-      require: public
-      version: 9.2.*
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 0.5.0
-  espressif/esp-lib-utils:
-    component_hash: 9e81fa27e3a8292bed95d91754ebcb8f27f47117328b0b646446f29fc5a847fb
+    version: 0.3.1
+  espressif/esp-dsp:
+    component_hash: 3e7bbd487f1357a1d4944d0c85966d049501ea281b8a4c7f93f7cfedd5b7f23d
     dependencies:
     - name: idf
       require: private
-      version: '>=5.1'
+      version: '>=4.2'
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 0.2.3
+    version: 1.4.12
+  espressif/esp-lib-utils:
+    component_hash: 4ea629fce1e7e8a92d347d94b0e9dbb854ca3ecdf384ca6aa02677df9b4db735
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.4'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 0.3.0
+  espressif/esp-sr:
+    component_hash: b75f73cc0477767f155e06a0c482652bd28890aa53dc4f3828f47b7e332bf886
+    dependencies:
+    - name: espressif/esp-dsp
+      registry_url: https://components.espressif.com
+      require: private
+      version: <=1.5.0
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 2.0.3
+  espressif/esp_audio_codec:
+    component_hash: 92cb0441b1602835f24eca63ab4a1528897a137527a6cadb2f8cd0eba32d76ff
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.4'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 2.2.1
+  espressif/esp_audio_effects:
+    component_hash: 2cca6e0ed66cd75e2d0341ec55e5e1c2c25175855c1c93cce81bad38537729e8
+    dependencies: []
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 1.0.2
+  espressif/esp_audio_simple_player:
+    component_hash: 2361fd96e136b72774d4a19122d508ac22b2a404c90997c46608e9829e9f5b4a
+    dependencies:
+    - name: espressif/gmf_audio
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^0.6
+    - name: espressif/gmf_io
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^0.6
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 0.9.3
   espressif/esp_codec_dev:
     component_hash: 420a8a931f8bdfc74ae89c4d2ce634823d10e1865b1e9bdb8428bfe4a1060def
     dependencies:
@@ -53,6 +177,24 @@ dependencies:
       registry_url: https://components.espressif.com/
       type: service
     version: 1.3.6
+  espressif/esp_coze:
+    component_hash: 2908f874d708307be1379dee5e9ed2caa01f2cdbbd1232283b5656e22b688692
+    dependencies:
+    - name: espressif/esp_websocket_client
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^1.4.0
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    targets:
+    - esp32
+    - esp32s3
+    - esp32s2
+    - esp32p4
+    - esp32c3
+    - esp32c6
+    version: 0.6.0
   espressif/esp_io_expander:
     component_hash: fbc0de4082fc7c207dc98a93a0ed83d1a929a4ecee83cc567afb406f3ee6d4a6
     dependencies:
@@ -119,6 +261,111 @@ dependencies:
       registry_url: https://components.espressif.com/
       type: service
     version: 2.6.0
+  espressif/esp_mmap_assets:
+    component_hash: 9b6eea296488103300f31a9e0fe9096f830b99341332a0dfccd7e3ce43814302
+    dependencies:
+    - name: espressif/cmake_utilities
+      registry_url: https://components.espressif.com
+      require: private
+      version: 0.*
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.3.1~2
+  espressif/esp_websocket_client:
+    component_hash: ac62982fcf9b266409c2299d2b6b1844122105b35163a3b7f8d0adaa9f7eb989
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.5.0
+  espressif/gmf_ai_audio:
+    component_hash: 06bf4ff0d1eacf78e0e87d625da3b74becca7e2ccdb59a14accbb5ecc405697e
+    dependencies:
+    - name: espressif/esp-sr
+      registry_url: https://components.espressif.com
+      require: private
+      version: 2.0.3
+    - name: espressif/gmf_core
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^0.6
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 0.6.2
+  espressif/gmf_audio:
+    component_hash: e57b39b200ffb7d759ab19ed94e6fb91fbfe98415d0bfbf572af491500a1407e
+    dependencies:
+    - name: espressif/esp_audio_codec
+      registry_url: https://components.espressif.com
+      require: private
+      version: ~2.2
+    - name: espressif/esp_audio_effects
+      registry_url: https://components.espressif.com
+      require: private
+      version: ~1.0
+    - name: espressif/gmf_core
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^0.6
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 0.6.3
+  espressif/gmf_core:
+    component_hash: 6e36a0c87d0c43582c0e0195e00df01adf560da87d7bfbe059b52ec4659f67ab
+    dependencies: []
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 0.6.1
+  espressif/gmf_io:
+    component_hash: c3b2e681ceb982ceae6e61a122b1545f72879a0feb47acbe552f35f2533de11e
+    dependencies:
+    - name: espressif/esp_codec_dev
+      registry_url: https://components.espressif.com
+      require: private
+      version: ~1.3
+    - name: espressif/gmf_core
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^0.6
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 0.6.3
+  espressif/gmf_misc:
+    component_hash: da408e1eadf478fc0febb309b28d9f21c3ed5f2bc1fdb28f4ee0617f8a837c45
+    dependencies:
+    - name: espressif/gmf_core
+      registry_url: https://components.espressif.com
+      require: private
+      version: '>=0.6'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 0.6.1
+  espressif2022/image_player:
+    component_hash: 0e42ed1c9665debd15f2f3e7e56519100e75e446410962226cb5e5402da3fa43
+    dependencies:
+    - name: espressif/cmake_utilities
+      registry_url: https://components.espressif.com
+      require: private
+      version: 0.*
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.1.1
   idf:
     source:
       type: idf
@@ -155,7 +402,10 @@ dependencies:
       type: service
     version: 1.0.1
 direct_dependencies:
-- espressif/esp-brookesia
+- brookesia_app_calculator
+- brookesia_app_game_2048
+- brookesia_app_settings
+- brookesia_core
 - espressif/esp32_s3_touch_amoled_2_06
 - espressif/esp_codec_dev
 - espressif/esp_lcd_panel_io_additions
@@ -165,6 +415,6 @@ direct_dependencies:
 - lvgl/lvgl
 - waveshare/esp_lcd_sh8601
 - waveshare/qmi8658
-manifest_hash: db2ae32fadcb651dd1b0cce2067321d8d3cc7aeb7fc1d3841799d00726243683
+manifest_hash: 10e0adf58247b534f5948f1e1cd52ef30dd29fb9fc634de6966f4b47ce4aa555
 target: esp32s3
 version: 2.0.0

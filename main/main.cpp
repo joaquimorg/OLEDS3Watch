@@ -4,30 +4,40 @@
  * SPDX-License-Identifier: CC0-1.0
  */
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_check.h"
-#include "nvs_flash.h"
-#include "nvs.h"
-#include "esp_log.h"
-#include "esp_lvgl_port.h"
-#include "driver/uart.h"
-#include "driver/gpio.h"
 #include "bsp/esp-bsp.h"
-#include "bsp/display.h"
-#include "bsp/touch.h"
 #include "esp_brookesia.hpp"
-#include "bsp_board_extra.h"
-#include "display_manager.h"
-// Power management
-#include "esp_pm.h"
-
-#include "apps.h"
+#include "boost/thread.hpp"
+#ifdef ESP_UTILS_LOG_TAG
+#   undef ESP_UTILS_LOG_TAG
+#endif
+#define ESP_UTILS_LOG_TAG "Main"
+#include "esp_lib_utils.h"
 
 #include "dark/stylesheet.h"
 
-static const char *TAG = "main";
+//#include "apps.h"
 
+#include "display_manager.h"
+#include "bsp_board_extra.h"
+
+using namespace esp_brookesia;
+using namespace esp_brookesia::gui;
+using namespace esp_brookesia::systems::phone;
+//using namespace esp_brookesia::apps;
+
+
+#define LVGL_PORT_INIT_CONFIG() \
+    {                               \
+        .task_priority = 4,       \
+        .task_stack = 20 * 1024,       \
+        .task_affinity = 1,      \
+        .task_max_sleep_ms = 500, \
+        .timer_period_ms = 5,     \
+    }
+
+constexpr bool EXAMPLE_SHOW_MEM_INFO = false;
+
+/*
 static void my_rounder_cb(lv_disp_drv_t *disp_drv, lv_area_t *area)
 {
     area->x1 = (area->x1 >> 1) << 1;
@@ -35,10 +45,15 @@ static void my_rounder_cb(lv_disp_drv_t *disp_drv, lv_area_t *area)
     area->x2 = ((area->x2 >> 1) << 1) + 1;
     area->y2 = ((area->y2 >> 1) << 1) + 1;
 }
+    */
 
 extern "C" void app_main(void)
 {
-    esp_err_t err = nvs_flash_init();
+    ESP_UTILS_LOGI("Display ESP-Brookesia SmartWatch demo");
+
+    bsp_extra_init();    
+
+    /*esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
         err = nvs_flash_init();
@@ -46,73 +61,128 @@ extern "C" void app_main(void)
     ESP_ERROR_CHECK(err);
 
     ESP_ERROR_CHECK(bsp_spiffs_mount());
-    ESP_LOGI(TAG, "SPIFFS mount successfully");
+    ESP_LOGI(TAG, "SPIFFS mount successfully");*/
 
-    //ESP_ERROR_CHECK(bsp_extra_codec_init());
+   /* Configure display */
+    bsp_display_cfg_t cfg = {
+        .lvgl_port_cfg = LVGL_PORT_INIT_CONFIG()
+    };
+    ESP_UTILS_CHECK_NULL_EXIT(bsp_display_start_with_config(&cfg), "Start display failed");
 
-    // Block light-sleep during boot and UI/display bring-up
-    display_manager_pm_early_init();
+    /* Configure GUI lock */
+    LvLock::registerCallbacks([](int timeout_ms) {
+        if (timeout_ms < 0) {
+            timeout_ms = 0;
+        } else if (timeout_ms == 0) {
+            timeout_ms = 1;
+        }
+        ESP_UTILS_CHECK_FALSE_RETURN(bsp_display_lock(timeout_ms), false, "Lock failed");
 
-    bsp_extra_init();
+        return true;
+    }, []() {
+        bsp_display_unlock();
 
-    lv_display_t *disp = bsp_display_start();
+        return true;
+    });
+    
+    display_manager_init();
 
-    if (disp && disp->driver) {
-        disp->driver->rounder_cb = my_rounder_cb;
-    }
-    // if (disp != NULL)
-    // {
-    //     bsp_display_rotate(disp, LV_DISPLAY_ROTATION_180);
-    // }
+    /* Create a phone object */
+    Phone *phone = new (std::nothrow) Phone();
+    ESP_UTILS_CHECK_NULL_EXIT(phone, "Create phone failed");
 
-    ESP_ERROR_CHECK(power_sleep_init());
 
-    bsp_display_lock(0);
+    /* Try using a stylesheet that corresponds to the resolution */
+    Stylesheet *stylesheet = nullptr;
 
-    ESP_Brookesia_Phone *phone = new ESP_Brookesia_Phone(disp);
-    assert(phone != nullptr && "Failed to create SmartWatch");
+    stylesheet = new (std::nothrow) Stylesheet(STYLESHEET_410_502_DARK);
 
-    ESP_Brookesia_PhoneStylesheet_t *stylesheet = nullptr;
-    stylesheet = new ESP_Brookesia_PhoneStylesheet_t ESP_BROOKESIA_PHONE_DEFAULT_DARK_STYLESHEET();
-    ESP_BROOKESIA_CHECK_NULL_EXIT(stylesheet, "Create stylesheet failed");
-
-    if (stylesheet != nullptr)
-    {
-        ESP_LOGI(TAG, "Using stylesheet (%s)", stylesheet->core.name);
-        ESP_BROOKESIA_CHECK_FALSE_EXIT(phone->addStylesheet(stylesheet), "Add stylesheet failed");
-        ESP_BROOKESIA_CHECK_FALSE_EXIT(phone->activateStylesheet(stylesheet), "Activate stylesheet failed");
+    if (stylesheet != nullptr) {
+        ESP_UTILS_LOGI("Using stylesheet (%s)", stylesheet->core.name);
+        ESP_UTILS_CHECK_FALSE_EXIT(phone->addStylesheet(stylesheet), "Add stylesheet failed");
+        ESP_UTILS_CHECK_FALSE_EXIT(phone->activateStylesheet(stylesheet), "Activate stylesheet failed");
         delete stylesheet;
     }
 
-    ESP_BROOKESIA_CHECK_FALSE_EXIT(phone->setTouchDevice(bsp_display_get_input_dev()), "Set touch device failed");
-    phone->registerLvLockCallback((ESP_Brookesia_LvLockCallback_t)(bsp_display_lock), 0);
-    phone->registerLvUnlockCallback((ESP_Brookesia_LvUnlockCallback_t)(bsp_display_unlock));
-    ESP_BROOKESIA_CHECK_FALSE_EXIT(phone->begin(), "Begin failed");
+    {
+        // When operating on non-GUI tasks, should acquire a lock before operating on LVGL
+        LvLockGuard gui_guard;
 
-    // Bind global LVGL touch activity to reset display timeout system-wide
-    //ESP_ERROR_CHECK(power_sleep_bind_global_touch_activity());
+        /* Begin the phone */
+        ESP_UTILS_CHECK_FALSE_EXIT(phone->begin(), "Begin failed");
+        // assert(phone->getDisplay().showContainerBorder() && "Show container border failed");
 
-    // Start display auto-sleep manager (timeout configurable in menuconfig)
-    //ESP_ERROR_CHECK(power_sleep_start_manager());
+        /* Init and install apps from registry */
+        std::vector<systems::base::Manager::RegistryAppInfo> inited_apps;
+        ESP_UTILS_CHECK_FALSE_EXIT(phone->initAppFromRegistry(inited_apps), "Init app registry failed");
+        //ESP_UTILS_CHECK_FALSE_EXIT(phone->installAppFromRegistry(inited_apps), "Install app registry failed");
 
-    //Calculator *calculator = new Calculator();
-    //assert(calculator != nullptr && "Failed to create calculator");
-    //assert((phone->installApp(calculator) >= 0) && "Failed to begin calculator");
+        /* Install app from registry */
+        // The app will be installed in the order of the vector, this determines the order of app icons in the main interface
+        std::vector<std::string> ordered_app_names = {"Settings", "Calculator", "2048"};
+        ESP_UTILS_CHECK_FALSE_EXIT(
+            phone->installAppFromRegistry(inited_apps, &ordered_app_names), "Install app registry failed"
+        );
 
-    WatchFace *watchface = new WatchFace();
-    assert(watchface != nullptr && "Failed to create watchface");
-    assert((phone->installApp(watchface) >= 0) && "Failed to begin watchface");
 
+        /* Create a timer to update the clock */
+        lv_timer_create([](lv_timer_t *t) {
+            time_t now;
+            struct tm timeinfo;
+            Phone *phone = (Phone *)t->user_data;
 
-    bsp_display_unlock();
+            ESP_UTILS_CHECK_NULL_EXIT(phone, "Invalid phone");
 
-    display_manager_init();
+            time(&now);
+            localtime_r(&now, &timeinfo);
 
-    // Now enable PM with light sleep allowed (still blocked while screen is ON)
-    esp_pm_config_t pm_cfg = {
-        .max_freq_mhz = 240,
-        .min_freq_mhz = 80,
-        .light_sleep_enable = true,
-    };
-    (void)esp_pm_configure(&pm_cfg);
+            ESP_UTILS_CHECK_FALSE_EXIT(
+                phone->getDisplay().getStatusBar()->setClock(timeinfo.tm_hour, timeinfo.tm_min),
+                "Refresh status bar failed"
+            );
+        }, 1000, phone);
+    }
+
+    //Timer *app_simple_conf = new Timer();
+    //ESP_UTILS_CHECK_NULL_EXIT(app_simple_conf, "Create app simple failed");
+    //ESP_UTILS_CHECK_FALSE_EXIT((phone->installApp(app_simple_conf) >= 0), "Install app simple failed");
+
+    if constexpr (EXAMPLE_SHOW_MEM_INFO) {
+        esp_utils::thread_config_guard thread_config({
+            .name = "mem_info",
+            .stack_size = 4096,
+        });
+        boost::thread([ = ]() {
+            char buffer[128];    /* Make sure buffer is enough for `sprintf` */
+            size_t internal_free = 0;
+            size_t internal_total = 0;
+            size_t external_free = 0;
+            size_t external_total = 0;
+
+            while (1) {
+                internal_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+                internal_total = heap_caps_get_total_size(MALLOC_CAP_INTERNAL);
+                external_free = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
+                external_total = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
+                sprintf(buffer,
+                        "\t           Biggest /     Free /    Total\n"
+                        "\t  SRAM : [%8d / %8d / %8d]\n"
+                        "\t PSRAM : [%8d / %8d / %8d]",
+                        heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL), internal_free, internal_total,
+                        heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM), external_free, external_total);
+                ESP_UTILS_LOGI("\n%s", buffer);
+
+                {
+                    LvLockGuard gui_guard;
+                    ESP_UTILS_CHECK_FALSE_EXIT(
+                        phone->getDisplay().getRecentsScreen()->setMemoryLabel(
+                            internal_free / 1024, internal_total / 1024, external_free / 1024, external_total / 1024
+                        ), "Set memory label failed"
+                    );
+                }
+
+                boost::this_thread::sleep_for(boost::chrono::seconds(5));
+            }
+        }).detach();
+    }
 }
