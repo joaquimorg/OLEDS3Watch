@@ -415,6 +415,6 @@ direct_dependencies:
 - lvgl/lvgl
 - waveshare/esp_lcd_sh8601
 - waveshare/qmi8658
-manifest_hash: 10e0adf58247b534f5948f1e1cd52ef30dd29fb9fc634de6966f4b47ce4aa555
+manifest_hash: 9435e1ae0928d391e70e736a513d4be3eed2b43e343de8e0999bbdae52dd1d47
 target: esp32s3
 version: 2.0.0

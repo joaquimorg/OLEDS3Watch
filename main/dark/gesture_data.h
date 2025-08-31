@@ -19,7 +19,7 @@ constexpr Gesture::IndicatorBarData STYLESHEET_410_502_DARK_GESTURE_LEFT_RIGHT_I
     },
     .indicator = {
         .radius = 5,
-        .color = gui::StyleColor::COLOR(0xFFFFFF),
+        .color = gui::StyleColor::COLOR(0xAFAFAF),
     },
     .animation = {
         .scale_back_path_type = gui::StyleAnimation::ANIM_PATH_TYPE_BOUNCE,
@@ -37,7 +37,7 @@ constexpr Gesture::IndicatorBarData STYLESHEET_410_502_DARK_GESTURE_BOTTOM_INDIC
     },
     .indicator = {
         .radius = 5,
-        .color = gui::StyleColor::COLOR(0xFFFFFF),
+        .color = gui::StyleColor::COLOR(0x8F8F8F),
     },
     .animation = {
         .scale_back_path_type = gui::StyleAnimation::ANIM_PATH_TYPE_BOUNCE,
@@ -66,8 +66,8 @@ constexpr Gesture::Data STYLESHEET_410_502_DARK_GESTURE_DATA = {
     },
     .flags = {
         .enable_indicator_bars = {
-            [static_cast<int>(Gesture::IndicatorBarType::LEFT)] = 0,
-            [static_cast<int>(Gesture::IndicatorBarType::RIGHT)] = 0,
+            [static_cast<int>(Gesture::IndicatorBarType::LEFT)] = 1,
+            [static_cast<int>(Gesture::IndicatorBarType::RIGHT)] = 1,
             [static_cast<int>(Gesture::IndicatorBarType::BOTTOM)] = 1,
         },
     },
