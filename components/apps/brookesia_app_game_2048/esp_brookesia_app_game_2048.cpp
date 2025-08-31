@@ -19,7 +19,7 @@ using namespace esp_brookesia::systems::phone;
 
 #define APP_NAME "2048"
 
-#define ENABLE_CELL_DEBUG       (1)
+#define ENABLE_CELL_DEBUG       (0)
 
 #define BOARD_BG_COLOR          lv_color_white()
 #define BOARD_TITLE_FONT        &lv_font_montserrat_18

@@ -18,7 +18,11 @@ namespace esp_brookesia::apps {
         bool deinit() override;
 
     private:
-        lv_obj_t* title;
+        lv_obj_t* label_hour;
+        lv_obj_t* label_minute;
+        lv_obj_t* label_second;
+        lv_obj_t* label_date;
+        lv_obj_t* label_weekday;
     };
 
 }

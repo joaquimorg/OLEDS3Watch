@@ -18,3 +18,5 @@ dependencies:
     override_path: "../components/apps/brookesia_app_settings"
   app_watchface:
     override_path: "../components/apps/app_watchface"
+  app_notifications:
+    override_path: "../components/apps/app_notifications"

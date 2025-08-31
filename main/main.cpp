@@ -100,7 +100,7 @@ extern "C" void app_main(void)
 
             /* Install app from registry */
             // The app will be installed in the order of the vector, this determines the order of app icons in the main interface
-            std::vector<std::string> ordered_app_names = { "Watchface", "Calculator", "2048", "Settings" };
+            std::vector<std::string> ordered_app_names = { "Clock", "Notifications", "Calculator", "2048", "Settings" };
             ESP_UTILS_CHECK_FALSE_EXIT(
                 phone->installAppFromRegistry(inited_apps, &ordered_app_names), "Install app registry failed"
             );
