@@ -1,4 +1,12 @@
 dependencies:
+  app_watchface:
+    dependencies:
+    - name: espressif/brookesia_core
+      public: true
+    source:
+      path: D:\Work\ESP32-S3-Touch-AMOLED\OLEDS3Watch\components\apps\app_watchface
+      type: local
+    version: 0.6.0
   brookesia_app_calculator:
     dependencies:
     - name: espressif/brookesia_core
@@ -402,6 +410,7 @@ dependencies:
       type: service
     version: 1.0.1
 direct_dependencies:
+- app_watchface
 - brookesia_app_calculator
 - brookesia_app_game_2048
 - brookesia_app_settings
@@ -415,6 +424,6 @@ direct_dependencies:
 - lvgl/lvgl
 - waveshare/esp_lcd_sh8601
 - waveshare/qmi8658
-manifest_hash: 9435e1ae0928d391e70e736a513d4be3eed2b43e343de8e0999bbdae52dd1d47
+manifest_hash: 82b1de7f9ffd47d49cfe4f8b0638e42fd88e40cbd96e476074a9ccfeb7965b74
 target: esp32s3
 version: 2.0.0

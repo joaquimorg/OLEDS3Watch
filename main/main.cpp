@@ -41,7 +41,7 @@ extern "C" void app_main(void)
 {
     ESP_UTILS_LOGI("SmartWatch OLEDS3Watch");
 
-    bsp_extra_init();
+    ESP_UTILS_CHECK_ERROR_EXIT(bsp_extra_init(), "Init extra failed");
 
     /* Configure display */
     bsp_display_cfg_t cfg = {
@@ -100,7 +100,7 @@ extern "C" void app_main(void)
 
             /* Install app from registry */
             // The app will be installed in the order of the vector, this determines the order of app icons in the main interface
-            std::vector<std::string> ordered_app_names = { "Settings", "Calculator", "2048" };
+            std::vector<std::string> ordered_app_names = { "Watchface", "Calculator", "2048", "Settings" };
             ESP_UTILS_CHECK_FALSE_EXIT(
                 phone->installAppFromRegistry(inited_apps, &ordered_app_names), "Install app registry failed"
             );
